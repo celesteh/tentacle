@@ -14,7 +14,7 @@ module closed_chamber_top(w=22, r=20, sidewall=1,topwall=2.1) {
 			translate([(-1 * r),0,0])
 			union(){
                 //bottom
-				cube([(2 * r),topwall+1,w]);
+				cube([(2 * r),topwall+2,w]);
 				//translate([topwall,-1,sidewall])cube([((r * 2) - (topwall * 2)),(topwall *2),(w - (sidewall * 2))]);
 			}
 		};
@@ -51,7 +51,7 @@ module closed_chamber_void(w=22, r=20, sidewall=1,topwall=2.1) {
                     cylinder(h=(w-(sidewall*2)), r=(r-topwall), center=false);//curve
                     translate([topwall-r,-1,sidewall])cube([((r * 2) - (topwall * 2)),((topwall+1) *2),(w - (sidewall * 2))]);//box
 				}
-				
+                translate([(r * -1)-0.5,(topwall +1),/*sidewall*/-0.5])cube([(r * 2)+1,((topwall+1) *2),w+1]); // overhang
 			}
 			//translate([(-1 * r),0,0])
 			//union(){
@@ -60,7 +60,7 @@ module closed_chamber_void(w=22, r=20, sidewall=1,topwall=2.1) {
 				//translate([topwall,-1,sidewall])cube([((r * 2) - (topwall * 2)),(topwall *2),(w - (sidewall * 2))]);
 			//}
 		};
-		translate([(-1 *r),0,(-1 * w)-r-topwall])cube([r*2, r*2, w*2]);
+		translate([(-1 *r)-1,-1,(-1 * w)-r-topwall-2])cube([(r*2)+5, (r*2)+5, w*2]);
 	};
 };
 
@@ -658,11 +658,11 @@ module top_mould_case (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2,
             cylinder(h=padding+2, r1=air_channel, r2=extension, center=false);
         }
         // ears
-        rm = rim + 0.5;
-        translate([wi/2, y, rm])
-        cube([(padding * 4), padding, h-rm]);
-        translate([(wi/-2)+(padding*-4), y, rm])
-        cube([(padding * 4), padding, h-rm]);
+        rm = rim + 1;
+        translate([((wi/-2) - (padding*2)), y-rim, rm])
+        cube([(padding * 4)+wi, padding, h-rm]);
+        //translate([(wi/-2)+(padding*-4), y-rim, rm])
+        //cube([(padding * 4), padding+rim, h-rm]);
         
         //handles
         handle_l = padding * 4;
@@ -698,20 +698,20 @@ module bottom_mould_case (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel
                 cube([wi,l,rim+1]);
             }
         }
-    }
+    
             //handles
         handle_l = padding * 4;
-        translate([wi/2, y+l-handle_l,z])
+        translate([wid, le-handle_l,0])
         cube([ (padding*2), handle_l, padding]);
-        translate([(wi/-2)-(padding*2), y+l-handle_l, z])
+        translate([padding*-2, le-handle_l, 0])
         cube([(padding*2),handle_l,  padding]);
     
         //ears
-        translate([wi/2, y, z])
-        cube([(padding * 4), padding, padding]);
-        translate([(wi/-2)+(padding*-4), y, z])
-        cube([(padding * 4), padding, padding]);
-    
+        translate([wid, 0, 0])
+        cube([(padding * 4), padding+rim, padding]);
+        translate([(padding*-4), 0, 0])
+        cube([(padding * 4), padding+rim, padding]);
+    }
     }
 }
 
@@ -741,15 +741,15 @@ module complete(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extens
     
     union() {
         
-        flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
-        translate([(wi*2),0, hi])
+        //flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+        translate([(wi*1),padding, hi])
             rotate([0,180,0])
                 difference(){
                     top_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
                     complete_top(num,w,r,sidewall,topwall, air_channel, extension);
                 }
         
-        translate([(wi * 3.5),l,padding])
+        translate([(wi * 2.5),l,padding])
             rotate([0,0,180]) 
             union() {
                 bottom_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
@@ -767,15 +767,15 @@ module start(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension
     
     union() {
         
-        flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
-        translate([(wi*2),0, hi])
+        //flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+        translate([(wi),0, hi])
             rotate([0,180,0])
                 difference(){
                     top_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
                     start_top(num,w,r,sidewall,topwall, air_channel, extension);
                 }
         
-        translate([(wi * 3.5),l,padding])
+        translate([(wi * 2.5),l,padding])
             rotate([0,0,180]) 
             union() {
                 bottom_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
@@ -793,15 +793,15 @@ module middle(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extensio
     
     union() {
         
-        flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
-        translate([(wi*2),0, hi])
+        //flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+        translate([(wi),0, hi])
             rotate([0,180,0])
                 difference(){
                     top_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
                     middle_top(num,w,r,sidewall,topwall, air_channel, extension);
                 }
         
-        translate([(wi * 3.5),l,padding])
+        translate([(wi * 2.5),l,padding])
             rotate([0,0,180]) 
             union() {
                 bottom_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
@@ -819,15 +819,15 @@ module end(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3
     
     union() {
         
-        flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
-        translate([(wi*2),0, hi])
+        //flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+        translate([(wi*1),0, hi])
             rotate([0,180,0])
                 difference(){
                     top_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
                     end_top(num,w,r,sidewall,topwall, air_channel, extension);
                 }
         
-        translate([(wi * 3.5),l,padding])
+        translate([(wi * 2.5),l,padding])
             rotate([0,0,180]) 
             union() {
                 bottom_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
@@ -862,34 +862,39 @@ module assemble(top,void,flat,top_case,bottom_case, wi,l) {
         
     
 
-module tentacle(section=0, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5, rim=2, h=4, length=500,
+module tentacle(section=0, w=25, r=30, sidewall=1,topwall=2.1, air_channel=2, extension=4, padding=5, rim=2, h=4, length=500,
 	bedsize=223){
 	
-	safesize = bedsize-20;
+	safesize = bedsize-(padding*6);
 	section_size = w+extension;
 	per_print = floor(bedsize/ section_size);
 	num = round(length / section_size);
         
+        
+    difference() {
 
         
-	if (num <= per_print) {
-        complete (num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
-	} else {
-		
-		if (section ==0) {
-			start(per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
-		} else {
-			if ((((section +1) * per_print) >
-				num)|| (section>1)) {
-				end(num%per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
-			} else {
-				middle(per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
-			}
-		}
-	}   
+        if (num <= per_print) {
+            complete (num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+        } else {
+            
+            if (section ==0) {
+                start(per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+            } else {
+                if ((((section +1) * per_print) >
+                    num)|| (section>1)) {
+                    end(num%per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+                } else {
+                    middle(per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+                }
+            }
+        }
+    translate([0,0, bedsize * -1])
+    cube([bedsize,bedsize,bedsize]);
+    }
 }
 
-tentacle(length=200);
+tentacle(2, length=470);
 //complete();
 //start();
 //middle();
@@ -900,3 +905,5 @@ tentacle(length=200);
 //    top_mould_case();
 //}
 //flat();
+//base_void();
+//end_cap();
