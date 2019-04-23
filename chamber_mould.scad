@@ -703,7 +703,7 @@ module top_mould_case (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2,
             translate([(wi/-2)-(padding*2), y+l-handle_l, h-padding])
             cube([(padding*2),handle_l,  padding]);
         }
-        bottom_mould_case(num, w, r, sidewall,topwall, air_channel, extension, padding, rim+0.2);
+        bottom_mould_case(num, w, r-0.1, sidewall,topwall, air_channel, extension-0.001, padding, rim+0.2);
     }
 }
 
