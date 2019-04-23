@@ -117,14 +117,18 @@ module chamber_top(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2){
         }
 }
 module chamber_void(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2) {
-        	union(){
+        	
+    intersection(){
+                
+        union() {
 		closed_chamber_void(w,r,sidewall,topwall);
 		translate([(air_channel/-2),-2,-2])
 		//rotate([90,0,0])
 		//cylinder(h=(sidewall*4), r=air_channel, center=true);
             cube([(air_channel), (sidewall *4), (air_channel+3)]);
             }
-    
+        }
+        chamber_top(w,r,sidewall,topwall,air_channel);
     }
     
 module chamber(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2){
@@ -162,8 +166,10 @@ module end_cap_top(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=
     
 }
 module end_cap_void(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) {
-    
-    chamber_void(w,r,sidewall,topwall,air_channel);
+    intersection(){
+        chamber_void(w,r,sidewall,topwall,air_channel);
+        end_cap_top(w,r,sidewall,topwall,air_channel, extension);
+    }
     
 }
 
@@ -207,8 +213,9 @@ module base_top(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) 
 				//translate([(-1 *r),(-1 *r),(-2 *r)])
 				//cube([(r*2),(r*2),(r*2)]);
 			}
-			translate([(-1 * r),w,0]) 
-			cube([(r*2), extension, extension+1]);
+			translate([(-1 * r),w,-1]) 
+            cube([(r*2), extension, extension+2]);
+			//cube([(r*2), extension, extension+1]);
 		};
 		//translate([0,w,0])        
 		//rotate([90,0,0])
@@ -217,12 +224,15 @@ module base_top(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) 
 };
 module base_void(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) {
     
+    intersection(){
+    union() {
     closed_chamber_void(w,r,sidewall,topwall);
   	translate([(air_channel/-2),w-sidewall,0])        
 	//rotate([90,0,0])
-    cube([(air_channel), ((sidewall+extension) *2), (air_channel+1)]);
-  
-    
+    cube([(air_channel), ((sidewall+extension) +1/* *2 */), (air_channel+1)]);
+    }
+    base_top(w,r,sidewall,topwall,air_channel,extension);
+}
 }
 
 module base(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) {
@@ -279,7 +289,10 @@ module start_cap_top(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extensio
 	}
 }
 module start_cap_void(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) {
+    intersection(){
         base_void(w,r,sidewall,topwall,air_channel, extension);
+        start_cap_top(w,r,sidewall,topwall,air_channel, extension);
+    }
 }
 module start_cap(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) {
     
@@ -317,12 +330,16 @@ module section_top(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=
     }
 module section_void(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) {
     
+    intersection() {
+        union(){
      base_void(w,r,sidewall,topwall, air_channel, extension);
 		translate([(air_channel/-2),-2,-2])
 		//rotate([90,0,0])
 		//cylinder(h=(sidewall*4), r=air_channel, center=true);
-            cube([(air_channel), (sidewall *4), (air_channel+3)]);
-            
+            cube([(air_channel), (sidewall *4/*4*/), (air_channel+3)]);
+        }
+        section_top(w,r,sidewall,topwall, air_channel, extension);
+    }
     
     
 }
@@ -357,25 +374,33 @@ module attachment_top(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extensi
 	
 	difference() {
 		
-		translate([0,w+extension-1,2])
+		translate([0,w+extension,2])
 		rotate([-90,0,0])
-		cylinder(h=1, r=r, center=false);
+		cylinder(h=extension, r=r, center=false);
 		
 		union() {
-			translate([r, w+extension-2,(r* -2)+2])
+			translate([r, w+extension-1/*-2*/,(r* -2)-1])// was +2, now -1
 			rotate([0,0, 90])
-			cube([3, r*2, r*2]);
+            cube([extension+2, r*2, r*2]);
 			
 			translate([r, w+extension-2,2+(r/3)])
 			rotate([0,0, 90])
-			cube([3, r*2, r*2]);
+			cube([extension+3, r*2, r*2]);
 			
 		}
 	} 
 	}
 module attachment_void(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) {
 	
-	section_void(w, r, sidewall,topwall, air_channel, extension);
+    intersection(){
+        union() {
+            section_void(w, r, sidewall,topwall, air_channel, extension);
+            translate([(air_channel/-2),w+extension, 0])
+                cube([(air_channel), (extension+1), (air_channel+1)]);
+            }
+
+        attachment_top(w, r, sidewall,topwall, air_channel, extension);
+    }
 }
 /*
 module attachment
@@ -427,6 +452,7 @@ module start_top(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, exten
 module start_void(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) {
 	mid = num -2;
 	
+    //intersection(){
 	union(){
 		start_cap_void(w, r, sidewall,topwall, air_channel, extension);
 		for (index=[0:1:mid]){
@@ -436,6 +462,8 @@ module start_void(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, exte
 		translate([0, (num-1) * (w+extension),0])
 		attachment_void(w, r, sidewall,topwall, air_channel, extension);
 	}
+    //start_top(num, w, r, sidewall,topwall, air_channel, extension);
+//}
 }
 /*
 module start(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) {
@@ -476,7 +504,7 @@ module middle_top(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, exte
 }
 module middle_void(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) {
 	mid = num -1;
-	
+	//intersection() {
 	union(){
 		for (index=[0:1:mid]){
 			translate([0, (index) * (w+extension),0])
@@ -485,6 +513,8 @@ module middle_void(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, ext
 		translate([0, (num-1) * (w+extension),0])
 		attachment_void(w, r, sidewall,topwall, air_channel, extension);
 	}
+    //middle_top(num, w, r, sidewall,topwall, air_channel, extension);
+//}
 }
 /*
 module middle(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) {
@@ -609,7 +639,7 @@ module complete(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extens
 }
 */
 
-function inner_length (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5) =((w+extension) * num) + extension;
+function inner_length (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5) =((w+extension) * num) + (extension * 2);
 function length(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5) = inner_length(num,w,r,sidewall,topwall,air_channel,extension,padding)+ (padding * 2);
    
 
@@ -646,30 +676,34 @@ module top_mould_case (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2,
     y = y_origin(num,w,r,sidewall,topwall,air_channel,extension,padding);
 
     //translate([(r/4)+1, y, (padding+ (air_channel/2))]);
-    union() {
-        difference(){
-            translate([wi/-2, y, 0])
-                cube([wi,l,h]);
-            translate([wi/-2, y, (padding *-1)])
-                cube([wi,l,padding]);
-            translate([(r/4)+1,l+y-padding-1,(air_channel/2)+padding])
-            //])
-                rotate([-90,0,0])
-            cylinder(h=padding+2, r1=air_channel, r2=extension, center=false);
+    difference() {
+        union() {
+            difference(){
+                translate([wi/-2, y, 0])
+                    cube([wi,l,h]);
+                translate([wi/-2, y, (padding *-1)])
+                    cube([wi,l,padding]);
+                //funnel
+                translate([(r/4)+1,l+y-padding-1,(air_channel/2)+(padding+extension)])
+                //])
+                    rotate([-90,0,0])
+                cylinder(h=padding+2, r1=air_channel, r2=extension+(air_channel/2), center=false);
+            }
+            // ears
+            rm = rim + rim + 1;
+            translate([((wi/-2) - (padding*2)), y-rim, rm])
+            cube([(padding * 4)+wi, padding, h-rm]);
+            //translate([(wi/-2)+(padding*-4), y-rim, rm])
+            //cube([(padding * 4), padding+rim, h-rm]);
+            
+            //handles
+            handle_l = padding * 4;
+            translate([wi/2, y+l-handle_l, h-padding])
+            cube([ (padding*2), handle_l, padding]);
+            translate([(wi/-2)-(padding*2), y+l-handle_l, h-padding])
+            cube([(padding*2),handle_l,  padding]);
         }
-        // ears
-        rm = rim + 1;
-        translate([((wi/-2) - (padding*2)), y-rim, rm])
-        cube([(padding * 4)+wi, padding, h-rm]);
-        //translate([(wi/-2)+(padding*-4), y-rim, rm])
-        //cube([(padding * 4), padding+rim, h-rm]);
-        
-        //handles
-        handle_l = padding * 4;
-        translate([wi/2, y+l-handle_l, h-padding])
-        cube([ (padding*2), handle_l, padding]);
-        translate([(wi/-2)-(padding*2), y+l-handle_l, h-padding])
-        cube([(padding*2),handle_l,  padding]);
+        bottom_mould_case(num, w, r, sidewall,topwall, air_channel, extension, padding, rim+0.2);
     }
 }
 
@@ -681,6 +715,8 @@ module bottom_mould_case (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel
     //function inner_length (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5)
     l = length (num,w,r,sidewall,topwall,air_channel,extension,padding);
     y = y_origin(num,w,r,sidewall,topwall,air_channel,extension,padding);
+    
+    //rimm = rim+0.2;
     
     wid = wi+(rim*2);
     le = l + (rim*2);
@@ -758,39 +794,46 @@ module complete(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extens
         }
 }
 
-module start(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5, rim=2,h=4){
+module start(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5, rim=2,h=4, top=1){
  
     wi = width (num,w,r,sidewall,topwall,air_channel,extension,padding);
     l = length (num,w,r,sidewall,topwall,air_channel,extension,padding);
     hi = height (num,w,r,sidewall,topwall,air_channel,extension,padding);
    
-    
+    translate([padding* -6,0,0])
     union() {
-        
-        //flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+        if (top == -1)
+            flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+        if(top ==1) {
         translate([(wi),0, hi])
             rotate([0,180,0])
                 difference(){
                     top_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
                     start_top(num,w,r,sidewall,topwall, air_channel, extension);
                 }
-        
-        translate([(wi * 2.5),l,padding])
+            } 
+            if (top==0) {
+        translate([(wi* 1.5),l-(padding*2),padding]) // lone piece
+        //translate([(wi * 2.5),l,padding])
+                
+        //translate([(wi * 2.2),l-(padding*2),padding])
             rotate([0,0,180]) 
             union() {
                 bottom_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
                 start_void(num,w,r,sidewall,topwall, air_channel, extension);
             }
+                
+            }
         }
 }
 
-module middle(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5, rim=2,h=4){
+module middle(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5, rim=2,h=4,top=1){
  
     wi = width (num,w,r,sidewall,topwall,air_channel,extension,padding);
     l = length (num,w,r,sidewall,topwall,air_channel,extension,padding);
     hi = height (num,w,r,sidewall,topwall,air_channel,extension,padding);
    
-    
+    translate([padding* -6,0,0])
     union() {
         
         //flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
@@ -801,7 +844,8 @@ module middle(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extensio
                     middle_top(num,w,r,sidewall,topwall, air_channel, extension);
                 }
         
-        translate([(wi * 2.5),l,padding])
+        //translate([(wi * 2.5),l,padding])
+        translate([(wi * 2.2),l-(padding*2),padding])
             rotate([0,0,180]) 
             union() {
                 bottom_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
@@ -810,13 +854,13 @@ module middle(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extensio
         }
 }
 
-module end(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5, rim=2,h=4){
+module end(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5, rim=2,h=4,top=1){
  
     wi = width (num,w,r,sidewall,topwall,air_channel,extension,padding);
     l = length (num,w,r,sidewall,topwall,air_channel,extension,padding);
     hi = height (num,w,r,sidewall,topwall,air_channel,extension,padding);
    
-    
+    translate([padding* -6,0,0])
     union() {
         
         //flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
@@ -827,7 +871,8 @@ module end(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3
                     end_top(num,w,r,sidewall,topwall, air_channel, extension);
                 }
         
-        translate([(wi * 2.5),l,padding])
+        //translate([(wi * 2.5),l,padding])
+        translate([(wi * 2.2),l-(padding*2),padding])
             rotate([0,0,180]) 
             union() {
                 bottom_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
@@ -862,15 +907,16 @@ module assemble(top,void,flat,top_case,bottom_case, wi,l) {
         
     
 
-module tentacle(section=0, w=25, r=30, sidewall=1,topwall=2.1, air_channel=2, extension=4, padding=5, rim=2, h=4, length=500,
-	bedsize=223){
+module tentacle(section=0, w=25, r=30, sidewall=2,topwall=3.1, air_channel=3, extension=4, padding=3, rim=2, h=4, length=500,
+	bedsize=200, top=1){
 	
-	safesize = bedsize-(padding*6);
+	safesize = (bedsize-(padding*6))-12;
 	section_size = w+extension;
-	per_print = floor(bedsize/ section_size);
+	per_print = floor(safesize/ section_size) -1;
 	num = round(length / section_size);
         
-        
+    intersection(){
+    translate([0,((padding*2)+rim), 0])    
     difference() {
 
         
@@ -879,31 +925,34 @@ module tentacle(section=0, w=25, r=30, sidewall=1,topwall=2.1, air_channel=2, ex
         } else {
             
             if (section ==0) {
-                start(per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+                start(per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h,top);
             } else {
                 if ((((section +1) * per_print) >
                     num)|| (section>1)) {
-                    end(num%per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+                    end(num%per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h,top);
                 } else {
-                    middle(per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+                    middle(per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h,top);
                 }
             }
         }
     translate([0,0, bedsize * -1])
     cube([bedsize,bedsize,bedsize]);
     }
+    cube([safesize,safesize,safesize]);
+}
 }
 
-tentacle(2, length=470);
-//complete();
-//start();
-//middle();
-//end();
-//union(){
-//bottom_mould_case();
-//    complete_void();
-//    top_mould_case();
+tentacle(0, length=470, top=1);
+//intersection(){ //what??
+//start_top();
+//    start_void();
 //}
-//flat();
-//base_void();
-//end_cap();
+//union(){
+//    section_top();
+//    section_void();
+//}
+//difference(){
+//union(){
+//    top_mould_case();
+//    bottom_mould_case();
+//}
