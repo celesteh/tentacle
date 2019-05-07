@@ -1,4 +1,4 @@
-module closed_chamber_top(w=22, r=20, sidewall=1,topwall=2.1,overhang=1) {
+module closed_chamber_top(w=22, r=20, sidewall=1,topwall=2.1,, air_channel=2, overhang=1) {
 	translate([0,0, topwall+1]){
 
     union(){
@@ -33,19 +33,21 @@ module closed_chamber_top(w=22, r=20, sidewall=1,topwall=2.1,overhang=1) {
         angle = 25;
         side_offset = r * 5/8;
         //pos side
-        translate([side_offset, w-1, sqrt((r*r) - (side_offset * side_offset))-topwall])
-        rotate([0,angle,0])
+        translate([side_offset, w-1.5, sqrt((r*r) - (side_offset * side_offset))-topwall])
+        rotate([angle*-1,angle,0])
         cylinder(h=topwall*2.5, r=0.75);
         translate([side_offset+(tan(angle) * topwall)+1, w-2, sqrt((r*r) - (side_offset * side_offset))+topwall])
-        rotate([-90,0,0])
-        cylinder(h=(w*2),r=0.75);
+        rotate([-90,0,angle*-1])
+        cylinder(h=(w*2),r=air_channel);
         // neg side
-        translate([side_offset*-1, w-1, sqrt((r*r) - (side_offset * side_offset))-topwall])
-        rotate([0,angle * -1,0])
+        
+        translate([side_offset*-1, w-1.5, sqrt((r*r) - (side_offset * side_offset))-topwall])
+        rotate([angle*-1,angle * -1,0])
         cylinder(h=topwall*2.5, r=0.75);
         translate([(side_offset+(tan(angle) * topwall)+1) *-1, w-2, sqrt((r*r) - (side_offset * side_offset))+topwall])
-        rotate([-90,0,0])
-        cylinder(h=(w*2),r=0.75);
+        rotate([-90,0,angle])
+        cylinder(h=(w*2),r=air_channel);
+        
     };
 	
 };
@@ -99,9 +101,9 @@ module closed_chamber_void(w=22, r=20, sidewall=1,topwall=2.1,overhang=1) {
 	};
 };
 
-module closed_chamber(w=22, r=20, sidewall=1,topwall=2.1,overhang=1){
+module closed_chamber(w=22, r=20, sidewall=1,topwall=2.1,air_channel = 2, overhang=1){
     difference(){
-        closed_chamber_top(w,r,sidewall,topwall,overhang);
+        closed_chamber_top(w,r,sidewall,topwall,air_channel, overhang);
         closed_chamber_void(w,r,sidewall,topwall,overhang);
     }
 }
@@ -144,7 +146,7 @@ module closed_chamber(w=22, r=20, sidewall=1,topwall=2.1) {
 // input, no output
 module chamber_top(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2,overhang=1){   
     	union(){
-		closed_chamber_top(w,r,sidewall,topwall,overhang);
+		closed_chamber_top(w,r,sidewall,topwall, air_channel, overhang);
 		translate([(air_channel/-2),-1,-1])
 		//rotate([90,0,0])
 		//cylinder(h=(sidewall*4), r=air_channel, center=true);
@@ -236,7 +238,7 @@ module base_top(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3,o
 	//air_channel=(extension /2);
 	//difference() {
 		union(){
-			closed_chamber_top(w,r,sidewall,topwall,overhang);
+			closed_chamber_top(w,r,sidewall,topwall,air_channel, overhang);
 			difference(){
 				union(){
 					//translate([0,0,topwall])
@@ -978,17 +980,5 @@ module tentacle(section=0, w=25, r=30, sidewall=2,topwall=3.1, air_channel=3, ex
 }
 
 tentacle(0, length=470, top=1, overhang=0);
-//intersection(){ //what??
-//start_top();
-//    start_void();
-//}
-//union(){
-//    section_top();
-//    section_void();
-//}
-//difference(){
-//union(){
-//    top_mould_case();
-//    bottom_mould_case();
-//}
-//closed_chamber_void();
+
+//closed_chamber_top();
