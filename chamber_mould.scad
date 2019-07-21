@@ -98,7 +98,7 @@ module closed_chamber_void(w=22, r=20, sidewall=1,topwall=2.1,overhang=1) {
             
             
             // flow channels for silicon
-            if(overhang ==1) { // use cylindrical channels
+            //if(overhang ==1) { // use cylindrical channels
                 /*
                 translate([(r-sidewall-((topwall))), w,topwall])
                 rotate([90,0,0])
@@ -108,15 +108,16 @@ module closed_chamber_void(w=22, r=20, sidewall=1,topwall=2.1,overhang=1) {
                 cylinder(h=w,r=(topwall+1), center=false);
                 */
                 // positive
-                translate([(r-((sidewall-1)*2)), w,topwall])
+                translate([(r-((sidewall-1)*1.5)), w,(sidewall/2)+0.5])
                 rotate([90,0,0])
-                cylinder(h=w,r=(sidewall+1), center=false);
+                cylinder(h=w,r=(sidewall+1)/2, center=false);
                 // negative
-                translate([(r * -1) + (sidewall-1)*2, w,topwall])
+                translate([(r * -1) + (sidewall-1)*1.5, w,(sidewall/2)+0.5])
                 rotate([90,0,0])
-                cylinder(h=w,r=(sidewall+1), center=false);
+                cylinder(h=w,r=(sidewall+1)/2, center=false);
 
-            } else { // square off half cylinder protrusions
+            //} else { // square off half cylinder protrusions
+            if (overhang != 1) {
                 /*
                 translate([(r-sidewall-((topwall*2))), 0,topwall])
                 cube([(topwall+1) *2, w, r]);
@@ -124,17 +125,19 @@ module closed_chamber_void(w=22, r=20, sidewall=1,topwall=2.1,overhang=1) {
                 cube([(topwall+1) *2, w, r]);
                 */
                 // positive
-                translate([(r-((sidewall-1)*2)), w,topwall])
-                rotate([90,0,0])
-                cylinder(h=w,r=(sidewall+1), center=false);
-                translate([(r-((topwall+1)*2)), 0,topwall])
-                cube([(topwall+1) *2, w, r]);
+                //translate([(r-((sidewall-1)*2)), w,topwall])
+                //rotate([90,0,0])
+                //cylinder(h=w,r=(sidewall+1), center=false);
+                //translate([(r-((topwall+1)*2)), 0,topwall])
+                translate([(r-((sidewall+1)*1.25)), 0,(sidewall/2)+0.5])
+                cube([(sidewall+1), w, r]);
                 // negative
-                translate([(r * -1) + (sidewall-1)*2, w,topwall])
-                rotate([90,0,0])
-                cylinder(h=w,r=(sidewall+1), center=false);
-                translate([((r*-1)), 0,topwall])
-                cube([(topwall+1) *2, w, r]);
+                //translate([(r * -1) + (sidewall-1)*2, w,topwall])
+                //rotate([90,0,0])
+                //cylinder(h=w,r=(sidewall+1), center=false);
+                //translate([((r*-1)), 0,topwall])
+                translate([(r * -1) + (sidewall-1)*0.5, 0,(sidewall/2)+0.5])
+                cube([(sidewall+1), w, r]);
 
 
             }
@@ -205,8 +208,9 @@ module chamber_void(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2,overhang=1
 		//cylinder(h=(sidewall*4), r=air_channel, center=true);
             cube([(air_channel), (sidewall *4), (air_channel+3)]);
             }
-        }
+        
         chamber_top(w,r,sidewall,topwall,air_channel,overhang);
+        }
     }
     
 module chamber(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2,overhang=1){
@@ -450,7 +454,7 @@ module attachment_top(w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extensi
 			rotate([0,0, 90])
             cube([extension+2, r*2, r*2]);
 			
-			translate([r, w+extension-2,2+(r/3)])
+			translate([r, w+extension-2,/*2+(r/3)*/(topwall+air_channel)*2])
 			rotate([0,0, 90])
 			cube([extension+3, r*2, r*2]);
 			
@@ -710,7 +714,7 @@ function inner_length (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2,
 function length(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5) = inner_length(num,w,r,sidewall,topwall,air_channel,extension,padding)+ (padding * 2);
    
 
-function inner_height(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5) = r + topwall +1;
+function inner_height(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5) = r + (topwall * 1.5) +1;
 
 function height (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5) = inner_height (num,w,r,sidewall,topwall,air_channel,extension,padding) + padding;
 
@@ -745,6 +749,8 @@ module top_mould_case (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2,
     //function inner_length (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5)
     l = length (num,w,r,sidewall,topwall,air_channel,extension,padding);
     y = y_origin(num,w,r,sidewall,topwall,air_channel,extension,padding);
+    wide_funnel_end = (extension/2)+(air_channel/2);
+    depth = extension + padding;//(extension * 2) + padding + 7;
 
     //translate([(r/4)+1, y, (padding+ (air_channel/2))]);
         union() {
@@ -760,12 +766,24 @@ module top_mould_case (num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2,
                 f_height = rim + (extension+(air_channel/2) / 2) +1; // (air_channel/2)+(padding+extension)
                 translate([(r* (5/8))+sidewall,l+y-padding-1,f_height])
                     rotate([-90,0,0])
-                cylinder(h=padding+2, r1=air_channel, r2=extension+(air_channel/2), center=false);
+                union() {
+                    cylinder(h=padding+2, r1=air_channel, r2=wide_funnel_end, center=false);
+                    translate([0,0,(depth * -1)])
+                    cylinder(h= depth, r= air_channel);
+                }
                 translate([(r * (-5/8))-sidewall,l+y-padding-1,f_height])
                     rotate([-90,0,0])
-                cylinder(h=padding+2, r1=air_channel, r2=extension+(air_channel/2), center=false);
+                union() {
+                cylinder(h=padding+2, r1=air_channel, r2=wide_funnel_end, center=false);
+                    translate([0,0,(depth * -1)])
+                    cylinder(h= depth, r= air_channel);
+                }
+                
+                // longer funnel ends
+                
             }
-            bottom_mould_case(num, w, r-0.1, sidewall,topwall, air_channel, extension-0.001, padding, rim+0.2);
+            // subtract out the other half
+            bottom_mould_case(num, w-0.2, r-0.2, sidewall,topwall, air_channel, extension-0.001, padding, rim+0.2);
         }
                 // ears
         rm = rim + rim + 1;
@@ -845,7 +863,7 @@ module flat(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=
 }
 
 
-module complete(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5, rim=2,h=4,overhang=1){
+module complete(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5, rim=2,h=4,top=0, overhang=1){
  
     wi = width (num,w,r,sidewall,topwall,air_channel,extension,padding);
     l = length (num,w,r,sidewall,topwall,air_channel,extension,padding);
@@ -853,15 +871,18 @@ module complete(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extens
    
     
     union() {
-        
+        if (top == -1) {
         //flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+        }
+        if (top ==1) {
         translate([(wi*1),padding, hi])
             rotate([0,180,0])
                 difference(){
                     top_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim);
                     complete_top(num,w,r,sidewall,topwall, air_channel, extension,overhang);
                 }
-        
+            }
+            if (top==0) {
         translate([(wi * 2.5),l,padding])
             rotate([0,0,180]) 
             union() {
@@ -869,6 +890,7 @@ module complete(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extens
                 complete_void(num,w,r,sidewall,topwall, air_channel, extension,overhang);
             }
         }
+}
 }
 
 module start(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5, rim=2,h=4, top=1,overhang=1){
@@ -997,13 +1019,13 @@ module tentacle(section=0, w=25, r=30, sidewall=2,topwall=3.1, air_channel=3, ex
 	per_print = floor(safesize/ section_size) -1;
 	num = round(length / section_size);
         
-    intersection(){
+    //intersection(){
     translate([0,((padding*2)+rim), 0])    
     difference() {
 
         
         if (num <= per_print) {
-            complete (num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h,overhang);
+            complete (num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h,top, overhang);
         } else {
             
             if (section ==0) {
@@ -1020,11 +1042,11 @@ module tentacle(section=0, w=25, r=30, sidewall=2,topwall=3.1, air_channel=3, ex
     translate([0,0, bedsize * -1])
     cube([bedsize,bedsize,bedsize]);
     }
-    cube([safesize,safesize,safesize]);
-}
+    //cube([safesize,safesize,safesize]);
+//}
 }
 
-module calc(section=0, w=22, r = 30, padding=3, rim = 2, h=4, length=500, bedsize=200, top=1, overhang=0) {
+module calc(section=0, w=22, r = 30, padding=3, rim = 2, h=4, length=500, bedsize=200, top=0, overhang=0) {
     // ratios from from DOI  10.1109/ROBIO.2009.4913047
     
     // section is 0 for start, 1 for middle, 2 for end
@@ -1036,16 +1058,32 @@ module calc(section=0, w=22, r = 30, padding=3, rim = 2, h=4, length=500, bedsiz
     // length is the length of the whole tentacle
     // bedsize is the size of the 3d printer bed
     // top is 0 for the taller box piece, 1 for the piece with extruding bumps, -1 for the flat floor 
-    sidewall= 0.167 * w; echo("sidewall", sidewall);
-    topwall= 0.167 * r; echo ("topwall", topwall);
-    sw = min(sidewall,topwall);
-    tw = sw;
+    // the top wall and sidewall both need to compensate for a resin layer if printed in PLA
+    
+     sidewall= 0.167 * w; echo("sidewall", sidewall);
+     topwall= 0.167 * r; echo ("topwall", topwall);
+
+    
+    // uncomment the lines below for ABS
+    //sw = min(sidewall,topwall);
+    //tw = sw;
+
+    // for PLA, this is driven by pooling of the resin coating, which is about 5 mil in the bottom of the mould
+    // and probably 1mm of thickness on all pieces without pooling    
+    
+    sw = min(sidewall,topwall) + 0.2;
+    tw = sw + 0.5;
+    
+    
     // inner height of gap
     extension= 0.25 * r; echo("extension", extension);
     // size of hole
     air_channel=3;//extension * 0.75; echo("air_channel", air_channel);// from existing practice in this project
+    
+    // make the sections have gemoetrically related dimensions
+    w_r = min(w,r);
 
-    tentacle(section,w,r,sw,tw,air_channel, extension, padding, rim, h, length, bedsize, top, overhang);
+    tentacle(section,w_r,w_r,sw,tw,air_channel, extension, padding, rim, h, length, bedsize, top, overhang);
     //closed_chamber_top(w, r, sidewall,topwall, air_channel, overhang);
     //attachment_top(w, r, sidewall,topwall, air_channel, extension,overhang);
     //section_top(w, r, sidewall,topwall, air_channel, extension,overhang);
@@ -1056,6 +1094,7 @@ module calc(section=0, w=22, r = 30, padding=3, rim = 2, h=4, length=500, bedsiz
     
     
 
-calc(0, length=470, top=0, overhang=0);
+//calc(0, length=470, top=1, overhang=0);
+calc(0, length=132, top=1, overhang=0);
 
-//closed_chamber_top();
+//attachment_top();
