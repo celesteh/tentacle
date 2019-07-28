@@ -626,6 +626,7 @@ module end_top(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extensi
 module end_void(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3,overhang=1) {
 	mid = num -1;
 	
+    if (num > 1) {
 	union(){
 		for (index=[0:1:(mid-1)]){
 			translate([0, (index) * (w+extension),0])
@@ -634,6 +635,10 @@ module end_void(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extens
 		translate([0, (num-1) * (w+extension),0])
 		end_cap_void(w, r, sidewall,topwall, air_channel, extension,overhang);
 	}
+} else {
+    translate ([0, (w * -1) + extension, 0])
+    end_cap_void(w, r, sidewall,topwall, air_channel, extension,overhang);
+}
 }
 /*
 module end(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3) {
@@ -872,7 +877,7 @@ module complete(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extens
     
     union() {
         if (top == -1) {
-        //flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+        flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
         }
         if (top ==1) {
         translate([(wi*1),padding, hi])
@@ -939,7 +944,11 @@ module middle(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extensio
    
     translate([padding* -6,0,0])
     union() {
-        
+               if (top == -1)
+            flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+
+          if (top == 1) {
+      
         //flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
         translate([(wi),0, hi])
             rotate([0,180,0])
@@ -947,7 +956,9 @@ module middle(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extensio
                     top_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim,overhang);
                     middle_top(num,w,r,sidewall,topwall, air_channel, extension,overhang);
                 }
-        
+            }
+                    if (top == 0) {
+
         //translate([(wi * 2.5),l,padding])
         translate([(wi * 2.2),l-(padding*2),padding])
             rotate([0,0,180]) 
@@ -956,6 +967,8 @@ module middle(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extensio
                 middle_void(num,w,r,sidewall,topwall, air_channel, extension,overhang);
             }
         }
+    }
+        echo("middle");
 }
 
 module end(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5, rim=2,h=4,top=1,overhang=1){
@@ -966,7 +979,12 @@ module end(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3
    
     translate([padding* -6,0,0])
     union() {
+ 
+        if (top == -1)
+            flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
+
         
+        if (top ==1 ) {
         //flat(num,w,r,sidewall,topwall, air_channel, extension, padding, rim,h);
         translate([(wi*1),0, hi])
             rotate([0,180,0])
@@ -974,15 +992,18 @@ module end(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3
                     top_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim,overhang);
                     end_top(num,w,r,sidewall,topwall, air_channel, extension,overhang);
                 }
-        
+            }
+            if (top == 0) {
         //translate([(wi * 2.5),l,padding])
         translate([(wi * 2.2),l-(padding*2),padding])
             rotate([0,0,180]) 
             union() {
                 bottom_mould_case (num,w,r,sidewall,topwall, air_channel, extension, padding, rim,overhang);
                 end_void(num,w,r,sidewall,topwall, air_channel, extension,overhang);
+                //middle_void(num,w,r,sidewall,topwall, air_channel, extension,overhang);
             }
         }
+    }
 }
 
 
@@ -1033,7 +1054,10 @@ module tentacle(section=0, w=25, r=30, sidewall=2,topwall=3.1, air_channel=3, ex
             } else {
                 if ((((section +1) * per_print) >
                     num)|| (section>1)) {
-                    end(num%per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h,top,overhang);
+                        //module end(num=3, w=22, r=20, sidewall=1,topwall=2.1, air_channel=2, extension=3, padding=5, rim=2,h=4,top=1,overhang=1)
+                        sections = max(num%per_print, 2);
+                    end(sections,w,r,sidewall,topwall, air_channel, extension, padding, rim,h,top,overhang);
+                        //middle(sections,w,r,sidewall,topwall, air_channel, extension, padding, rim,h,top,overhang);
                 } else {
                     middle(per_print,w,r,sidewall,topwall, air_channel, extension, padding, rim,h,top,overhang);
                 }
@@ -1094,7 +1118,7 @@ module calc(section=0, w=22, r = 30, padding=3, rim = 2, h=4, length=500, bedsiz
     
     
 
-//calc(0, length=470, top=1, overhang=0);
-calc(0, length=132, top=1, overhang=0);
+calc(2, length=470, top=-1, overhang=0);
+//calc(0, length=132, top=-1, overhang=0);
 
 //attachment_top();
